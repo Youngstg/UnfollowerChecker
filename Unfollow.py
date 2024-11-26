@@ -30,3 +30,12 @@ for i in following:
 for i in following:
     if i not in goodpeople:
         print(i)
+
+not_following_back = []
+
+for person in follower:
+    if person not in following:
+        not_following_back.append(person)
+
+for person in not_following_back:
+    print(person)
