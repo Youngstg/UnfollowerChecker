@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Unfollower Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <h1>Instagram Unfollower Checker</h1>
+            <p class="subtitle">Lihat siapa yang unfollow kamu dengan mudah</p>
+
+            {% if error %}
+            <div class="error-message">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="form-group">
+                    <label for="username">Username Instagram</label>
+                    <input type="text" id="username" name="username" required placeholder="masukkan username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="masukkan password">
+                </div>
+
+                <button type="submit" class="btn-login">Login & Cek Unfollowers</button>
+            </form>
+
+            <div class="info-box">
+                <h3>Fitur:</h3>
+                <ul>
+                    <li>Tracking otomatis siapa yang unfollow kamu</li>
+                    <li>Lihat siapa yang tidak follow balik</li>
+                    <li>Riwayat perubahan followers</li>
+                    <li>Grafik statistik followers</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <strong>Catatan Keamanan:</strong>
+                <p>Login credentials disimpan dengan aman dan hanya digunakan untuk mengakses data Instagram Anda. Kami tidak menyimpan password Anda.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
