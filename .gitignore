@@ -38,3 +38,12 @@ instance/
 # OS
 .DS_Store
 Thumbs.db
+
+# Development files
+*.bat
+*.ps1
+dev.sh
+Makefile
+uv.lock
+pyproject.toml
+*.code-workspace

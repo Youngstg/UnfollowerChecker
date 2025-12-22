@@ -62,35 +62,84 @@ def index():
 def login():
     username = request.form.get('username')
     password = request.form.get('password')
+    session_json = request.form.get('session_json')  # Optional session JSON
 
     try:
         cl = get_instagram_client()
-
-        # Try to login
-        cl.login(username, password)
-
-        # Store session
-        session['instagram_username'] = username
-
-        # Get or create user in database
-        user = User.query.filter_by(instagram_username=username).first()
-        if not user:
-            user = User(instagram_username=username)
-            db.session.add(user)
-            db.session.commit()
-
-        # Save session file for future use
         session_file = f"session_{username}.json"
-        cl.dump_settings(session_file)
 
-        return redirect(url_for('dashboard'))
+        # Method 1: Try to use existing session file
+        if os.path.exists(session_file):
+            try:
+                cl.load_settings(session_file)
+                cl.login(username, password)
+                session['instagram_username'] = username
+
+                # Get or create user in database
+                user = User.query.filter_by(instagram_username=username).first()
+                if not user:
+                    user = User(instagram_username=username)
+                    db.session.add(user)
+                    db.session.commit()
+
+                return redirect(url_for('dashboard'))
+            except:
+                # Session expired, continue to other methods
+                pass
+
+        # Method 2: Try to import session JSON
+        if session_json and session_json.strip():
+            try:
+                session_data = json.loads(session_json)
+                with open(session_file, 'w') as f:
+                    json.dump(session_data, f)
+
+                cl.load_settings(session_file)
+                cl.get_timeline_feed()  # Test if session works
+
+                session['instagram_username'] = username
+
+                # Get or create user in database
+                user = User.query.filter_by(instagram_username=username).first()
+                if not user:
+                    user = User(instagram_username=username)
+                    db.session.add(user)
+                    db.session.commit()
+
+                return redirect(url_for('dashboard'))
+            except Exception as e:
+                return render_template('index.html', error=f'Session JSON tidak valid: {str(e)}')
+
+        # Method 3: Try direct login with password
+        if password:
+            cl.login(username, password)
+
+            # Store session
+            session['instagram_username'] = username
+
+            # Get or create user in database
+            user = User.query.filter_by(instagram_username=username).first()
+            if not user:
+                user = User(instagram_username=username)
+                db.session.add(user)
+                db.session.commit()
+
+            # Save session file for future use
+            cl.dump_settings(session_file)
+
+            return redirect(url_for('dashboard'))
+        else:
+            return render_template('index.html', error='Password atau Session JSON diperlukan')
 
     except TwoFactorRequired:
-        return render_template('index.html', error='2FA diperlukan. Silakan disable 2FA atau gunakan app password.')
+        return render_template('index.html', error='2FA diperlukan. Gunakan metode Session JSON sebagai gantinya.')
     except ChallengeRequired:
-        return render_template('index.html', error='Instagram memerlukan challenge. Silakan login melalui app Instagram terlebih dahulu.')
+        return render_template('index.html', error='Instagram memerlukan challenge. Gunakan metode Session JSON sebagai gantinya.')
     except Exception as e:
-        return render_template('index.html', error=f'Login gagal: {str(e)}')
+        error_msg = str(e)
+        if 'blacklist' in error_msg.lower() or 'ip' in error_msg.lower():
+            return render_template('index.html', error='IP terblokir Instagram. Silakan gunakan metode Session JSON (lihat tab "Import Session")')
+        return render_template('index.html', error=f'Login gagal: {error_msg}')
 
 @app.route('/dashboard')
 def dashboard():
@@ -135,18 +184,27 @@ def check_followers():
 
         # Load session if exists
         session_file = f"session_{username}.json"
-        if os.path.exists(session_file):
-            cl.load_settings(session_file)
-            cl.login(username, "")  # Login with session
-        else:
-            return jsonify({'error': 'Session expired, please login again'}), 401
+        if not os.path.exists(session_file):
+            return jsonify({'error': 'Session file not found, please login again'}), 401
 
-        # Get user ID
-        user_id = cl.user_id_from_username(username)
+        # Load session settings
+        cl.load_settings(session_file)
 
-        # Get followers and following
-        followers = cl.user_followers(user_id)
-        following = cl.user_following(user_id)
+        # Get user ID from session
+        user_id = cl.user_id
+
+        if not user_id:
+            return jsonify({'error': 'Invalid session, please login again'}), 401
+
+        # Get followers and following with error handling
+        try:
+            followers = cl.user_followers(user_id)
+            following = cl.user_following(user_id)
+        except Exception as api_error:
+            error_msg = str(api_error)
+            if 'login' in error_msg.lower() or 'challenge' in error_msg.lower():
+                return jsonify({'error': 'Session expired, please login again'}), 401
+            return jsonify({'error': f'Instagram API error: {error_msg}'}), 500
 
         # Convert to lists of usernames
         followers_list = [user.username for user in followers.values()]

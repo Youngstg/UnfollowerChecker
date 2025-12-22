@@ -112,8 +112,20 @@ rm -rf .venv
 uv sync
 ```
 
+### Login Error: IP Blocked / Blacklist
+Lihat panduan lengkap: **[CARA_BYPASS_IP_BLOCK.md](CARA_BYPASS_IP_BLOCK.md)**
+
+**Quick fix:**
+```bash
+# Generate session dari IP lain (hotspot HP/VPN)
+python get_session.py
+
+# Copy output JSON
+# Lalu import di web app (tab "Import Session")
+```
+
 ---
 
 **Selamat coding! 🚀**
 
-Butuh bantuan? Lihat [INSTALL.md](INSTALL.md) atau [DEPLOYMENT.md](DEPLOYMENT.md)
+Butuh bantuan? Lihat [INSTALL.md](INSTALL.md), [DEPLOYMENT.md](DEPLOYMENT.md), atau [CARA_BYPASS_IP_BLOCK.md](CARA_BYPASS_IP_BLOCK.md)
