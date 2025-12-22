@@ -13,7 +13,17 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', 'sqlite:///unfollower_tracker.db')
+
+# Use absolute path for database in /tmp for Vercel serverless
+# Vercel serverless functions have write access to /tmp directory
+if os.getenv('VERCEL'):
+    # Running on Vercel - use /tmp for database
+    db_path = '/tmp/unfollower_tracker.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+else:
+    # Running locally - use relative path
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', 'sqlite:///unfollower_tracker.db')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
