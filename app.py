@@ -1,12 +1,19 @@
+import os
+import json
+from datetime import datetime
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-import json
-import os
 from instagrapi import Client
-from instagrapi.exceptions import LoginRequired, ChallengeRequired, TwoFactorRequired
-import hashlib
-from dotenv import load_dotenv
+from instagrapi.exceptions import (
+    LoginRequired,
+    ChallengeRequired,
+    TwoFactorRequired,
+    BadCredentials,
+    PleaseWaitFewMinutes,
+    ClientThrottledError,
+    ProxyAddressIsBlocked
+)
 
 # Load environment variables
 load_dotenv()
@@ -14,14 +21,11 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Use absolute path for database in /tmp for Vercel serverless
-# Vercel serverless functions have write access to /tmp directory
+# Database configuration
 if os.getenv('VERCEL'):
-    # Running on Vercel - use /tmp for database
     db_path = '/tmp/unfollower_tracker.db'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 else:
-    # Running locally - use relative path
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', 'sqlite:///unfollower_tracker.db')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -56,11 +60,39 @@ class UnfollowerEvent(db.Model):
 with app.app_context():
     db.create_all()
 
-def get_instagram_client():
-    """Initialize Instagram client"""
+def get_instagram_client(username=None):
+    """
+    Inisialisasi Instagram client dengan delay realistis,
+    dukungan proxy (misal Cloudflare WARP / residential),
+    dan persistensi device settings agar tidak dianggap bot.
+    """
     cl = Client()
-    cl.delay_range = [1, 3]
+    cl.delay_range = [2, 5]
+
+    # Dukungan proxy untuk VPS (misal: socks5://127.0.0.1:40000 dari Cloudflare WARP)
+    proxy = os.getenv('INSTAGRAM_PROXY')
+    if proxy and proxy.strip():
+        cl.set_proxy(proxy.strip())
+
+    # Jika username diberikan dan session file ada, muat pengaturannya
+    if username:
+        session_file = f"session_{username}.json"
+        if os.path.exists(session_file):
+            try:
+                cl.load_settings(session_file)
+            except Exception as e:
+                app.logger.warning(f"Gagal memuat session file untuk {username}: {e}")
+
     return cl
+
+def get_or_create_user(username):
+    """Helper untuk mengambil atau mendaftarkan user di database lokal"""
+    user = User.query.filter_by(instagram_username=username).first()
+    if not user:
+        user = User(instagram_username=username)
+        db.session.add(user)
+        db.session.commit()
+    return user
 
 @app.route('/')
 def index():
@@ -70,86 +102,166 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-    username = request.form.get('username')
-    password = request.form.get('password')
-    session_json = request.form.get('session_json')  # Optional session JSON
+    raw_username = request.form.get('username', '')
+    username = raw_username.strip().replace('@', '').lower()
+    password = request.form.get('password', '')
+    session_json = request.form.get('session_json', '').strip()
+
+    if not username:
+        return render_template('index.html', error='Username Instagram tidak boleh kosong.')
+
+    session_file = f"session_{username}.json"
+
+    # Metode 1: Import Session JSON jika diisi
+    if session_json:
+        try:
+            session_data = json.loads(session_json)
+            with open(session_file, 'w', encoding='utf-8') as f:
+                json.dump(session_data, f)
+
+            cl = get_instagram_client(username)
+            cl.load_settings(session_file)
+
+            user_id = cl.user_id
+            if not user_id:
+                user_id = cl.user_id_from_username(username)
+
+            session['instagram_username'] = username
+            get_or_create_user(username)
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            return render_template('index.html', error=f'Session JSON tidak valid: {str(e)}')
+
+    # Metode 2: Login Langsung dengan Password
+    if not password:
+        return render_template('index.html', error='Password tidak boleh kosong.')
+
+    cl = get_instagram_client(username)
 
     try:
-        cl = get_instagram_client()
-        session_file = f"session_{username}.json"
-
-        # Method 1: Try to use existing session file
+        # Jika session file sudah ada dan masih aktif, gunakan kembali
         if os.path.exists(session_file):
             try:
                 cl.load_settings(session_file)
-                cl.login(username, password)
-                session['instagram_username'] = username
+                if cl.user_id:
+                    session['instagram_username'] = username
+                    get_or_create_user(username)
+                    return redirect(url_for('dashboard'))
+            except Exception:
+                pass  # Lanjut login kredensial jika session kedaluwarsa
 
-                # Get or create user in database
-                user = User.query.filter_by(instagram_username=username).first()
-                if not user:
-                    user = User(instagram_username=username)
-                    db.session.add(user)
-                    db.session.commit()
+        # Lakukan login kredensial
+        cl.login(username, password)
+        cl.dump_settings(session_file)
 
-                return redirect(url_for('dashboard'))
-            except:
-                # Session expired, continue to other methods
-                pass
-
-        # Method 2: Try to import session JSON
-        if session_json and session_json.strip():
-            try:
-                session_data = json.loads(session_json)
-                with open(session_file, 'w') as f:
-                    json.dump(session_data, f)
-
-                cl.load_settings(session_file)
-                cl.get_timeline_feed()  # Test if session works
-
-                session['instagram_username'] = username
-
-                # Get or create user in database
-                user = User.query.filter_by(instagram_username=username).first()
-                if not user:
-                    user = User(instagram_username=username)
-                    db.session.add(user)
-                    db.session.commit()
-
-                return redirect(url_for('dashboard'))
-            except Exception as e:
-                return render_template('index.html', error=f'Session JSON tidak valid: {str(e)}')
-
-        # Method 3: Try direct login with password
-        if password:
-            cl.login(username, password)
-
-            # Store session
-            session['instagram_username'] = username
-
-            # Get or create user in database
-            user = User.query.filter_by(instagram_username=username).first()
-            if not user:
-                user = User(instagram_username=username)
-                db.session.add(user)
-                db.session.commit()
-
-            # Save session file for future use
-            cl.dump_settings(session_file)
-
-            return redirect(url_for('dashboard'))
-        else:
-            return render_template('index.html', error='Password atau Session JSON diperlukan')
+        session['instagram_username'] = username
+        get_or_create_user(username)
+        return redirect(url_for('dashboard'))
 
     except TwoFactorRequired:
-        return render_template('index.html', error='2FA diperlukan. Gunakan metode Session JSON sebagai gantinya.')
+        # Simpan kredensial sementara di server session untuk diarahkan ke input kode 2FA
+        session['pending_2fa'] = {
+            'username': username,
+            'password': password
+        }
+        return redirect(url_for('verify_2fa'))
+
     except ChallengeRequired:
-        return render_template('index.html', error='Instagram memerlukan challenge. Gunakan metode Session JSON sebagai gantinya.')
+        return render_template(
+            'index.html',
+            error='Instagram mendeteksi login baru dari server VPS dan meminta verifikasi keamanan (Challenge). '
+                  'Solusi terbaik: Aktifkan 2FA (Aplikasi Autentikasi) di akun Instagram Anda agar kode dapat '
+                  'dimasukkan langsung di web ini, atau gunakan tab "SESSIONID" untuk login instan via cookie browser.'
+        )
+
+    except BadCredentials:
+        return render_template('index.html', error='Username atau password yang Anda masukkan salah.')
+
+    except (PleaseWaitFewMinutes, ClientThrottledError):
+        return render_template('index.html', error='Instagram membatasi permintaan ("Please wait a few minutes"). Tunggu beberapa menit sebelum mencoba kembali.')
+
+    except ProxyAddressIsBlocked:
+        return render_template('index.html', error='IP Server/VPS terblokir oleh Instagram. Silakan pasang Cloudflare WARP di VPS Anda atau atur INSTAGRAM_PROXY di .env.')
+
     except Exception as e:
         error_msg = str(e)
         if 'blacklist' in error_msg.lower() or 'ip' in error_msg.lower():
-            return render_template('index.html', error='IP terblokir Instagram. Silakan gunakan metode Session JSON (lihat tab "Import Session")')
+            return render_template(
+                'index.html',
+                error='IP VPS terdeteksi oleh blacklist Instagram. '
+                      'Gunakan tab "SESSIONID" untuk login instan dengan cookie browser, atau aktifkan Cloudflare WARP di VPS.'
+            )
         return render_template('index.html', error=f'Login gagal: {error_msg}')
+
+@app.route('/verify-2fa', methods=['GET', 'POST'])
+def verify_2fa():
+    """Halaman dan proses verifikasi Two-Factor Authentication (OTP / Authenticator)"""
+    pending = session.get('pending_2fa')
+    if not pending:
+        return redirect(url_for('index'))
+
+    username = pending['username']
+    password = pending['password']
+
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip().replace(' ', '')
+        if not code:
+            return render_template('verify_2fa.html', username=username, error='Kode verifikasi wajib diisi.')
+
+        cl = get_instagram_client(username)
+        session_file = f"session_{username}.json"
+
+        try:
+            cl.login(username, password, verification_code=code)
+            cl.dump_settings(session_file)
+
+            session.pop('pending_2fa', None)
+            session['instagram_username'] = username
+            get_or_create_user(username)
+            return redirect(url_for('dashboard'))
+
+        except Exception as e:
+            return render_template(
+                'verify_2fa.html',
+                username=username,
+                error=f'Verifikasi kode gagal: {str(e)}. Pastikan kode dari authenticator/SMS masih berlaku.'
+            )
+
+    return render_template('verify_2fa.html', username=username)
+
+@app.route('/cancel-2fa')
+def cancel_2fa():
+    """Batalkan alur verifikasi 2FA dan kembali ke awal"""
+    session.pop('pending_2fa', None)
+    return redirect(url_for('index'))
+
+@app.route('/login-cookie', methods=['POST'])
+def login_cookie():
+    """Metode login alternatif menggunakan Cookie SessionID tanpa perlu password"""
+    sessionid = request.form.get('sessionid', '').strip()
+    if not sessionid:
+        return render_template('index.html', error='Cookie SessionID tidak boleh kosong.')
+
+    cl = get_instagram_client()
+
+    try:
+        cl.login_by_sessionid(sessionid)
+        username = cl.username
+        if not username:
+            return render_template('index.html', error='Tidak dapat membaca akun dari SessionID. Pastikan sessionid benar.')
+
+        session_file = f"session_{username}.json"
+        cl.dump_settings(session_file)
+
+        session['instagram_username'] = username
+        get_or_create_user(username)
+        return redirect(url_for('dashboard'))
+
+    except Exception as e:
+        return render_template(
+            'index.html',
+            error=f'Login via SessionID gagal: {str(e)}. Pastikan cookie sessionid masih aktif di browser Anda.'
+        )
 
 @app.route('/dashboard')
 def dashboard():
@@ -159,89 +271,95 @@ def dashboard():
     username = session['instagram_username']
     user = User.query.filter_by(instagram_username=username).first()
 
-    # Get latest snapshot
+    if not user:
+        session.clear()
+        return redirect(url_for('index'))
+
+    # Dapatkan snapshot terakhir
     latest_snapshot = FollowerSnapshot.query.filter_by(user_id=user.id).order_by(FollowerSnapshot.timestamp.desc()).first()
 
-    # Get recent unfollower events
+    # Dapatkan histori yang unfollow
     recent_unfollowers = UnfollowerEvent.query.filter_by(
         user_id=user.id,
         event_type='unfollowed_you'
     ).order_by(UnfollowerEvent.detected_at.desc()).limit(50).all()
 
-    # Get not following back
+    # Dapatkan yang tidak follow balik
     not_following_back = UnfollowerEvent.query.filter_by(
         user_id=user.id,
         event_type='not_following_back'
     ).order_by(UnfollowerEvent.detected_at.desc()).all()
 
-    return render_template('dashboard.html',
-                         username=username,
-                         user=user,
-                         latest_snapshot=latest_snapshot,
-                         recent_unfollowers=recent_unfollowers,
-                         not_following_back=not_following_back)
+    return render_template(
+        'dashboard.html',
+        username=username,
+        user=user,
+        latest_snapshot=latest_snapshot,
+        recent_unfollowers=recent_unfollowers,
+        not_following_back=not_following_back
+    )
 
 @app.route('/check_followers')
 def check_followers():
     if 'instagram_username' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
+        return jsonify({'error': 'Belum login'}), 401
 
     username = session['instagram_username']
     user = User.query.filter_by(instagram_username=username).first()
 
-    try:
-        cl = get_instagram_client()
+    if not user:
+        return jsonify({'error': 'Data pengguna tidak ditemukan'}), 404
 
-        # Load session if exists
+    try:
         session_file = f"session_{username}.json"
         if not os.path.exists(session_file):
-            return jsonify({'error': 'Session file not found, please login again'}), 401
+            return jsonify({'error': 'File session tidak ditemukan, silakan login ulang.'}), 401
 
-        # Load session settings
-        cl.load_settings(session_file)
-
-        # Get user ID from session
+        cl = get_instagram_client(username)
         user_id = cl.user_id
 
         if not user_id:
-            return jsonify({'error': 'Invalid session, please login again'}), 401
+            try:
+                user_id = cl.user_id_from_username(username)
+            except Exception:
+                return jsonify({'error': 'Session kedaluwarsa, silakan login ulang.'}), 401
 
-        # Get followers and following with error handling
+        # Ambil followers dan following
         try:
             followers = cl.user_followers(user_id)
             following = cl.user_following(user_id)
         except Exception as api_error:
             error_msg = str(api_error)
-            if 'login' in error_msg.lower() or 'challenge' in error_msg.lower():
-                return jsonify({'error': 'Session expired, please login again'}), 401
+            if 'login' in error_msg.lower() or 'challenge' in error_msg.lower() or 'checkpoint' in error_msg.lower():
+                return jsonify({'error': 'Session kedaluwarsa oleh Instagram. Silakan login kembali.'}), 401
             return jsonify({'error': f'Instagram API error: {error_msg}'}), 500
 
-        # Convert to lists of usernames
-        followers_list = [user.username for user in followers.values()]
-        following_list = [user.username for user in following.values()]
+        followers_list = [u.username for u in followers.values()]
+        following_list = [u.username for u in following.values()]
 
-        # Get previous snapshot
+        # Ambil snapshot sebelumnya
         previous_snapshot = FollowerSnapshot.query.filter_by(user_id=user.id).order_by(FollowerSnapshot.timestamp.desc()).first()
 
-        # Detect unfollowers
+        # Deteksi siapa yang unfollow
         new_unfollowers = []
-        if previous_snapshot:
-            previous_followers = json.loads(previous_snapshot.followers_data)
-            new_unfollowers = [f for f in previous_followers if f not in followers_list]
+        if previous_snapshot and previous_snapshot.followers_data:
+            try:
+                previous_followers = json.loads(previous_snapshot.followers_data)
+                new_unfollowers = [f for f in previous_followers if f not in followers_list]
 
-            # Save unfollower events
-            for unfollower in new_unfollowers:
-                event = UnfollowerEvent(
-                    user_id=user.id,
-                    username=unfollower,
-                    event_type='unfollowed_you'
-                )
-                db.session.add(event)
+                for unfollower in new_unfollowers:
+                    event = UnfollowerEvent(
+                        user_id=user.id,
+                        username=unfollower,
+                        event_type='unfollowed_you'
+                    )
+                    db.session.add(event)
+            except Exception as e:
+                app.logger.warning(f"Error membandingkan snapshot: {e}")
 
-        # Detect not following back
+        # Deteksi yang tidak follow balik
         not_following_back = [f for f in following_list if f not in followers_list]
 
-        # Clear old not_following_back events and add new ones
         UnfollowerEvent.query.filter_by(user_id=user.id, event_type='not_following_back').delete()
         for person in not_following_back:
             event = UnfollowerEvent(
@@ -251,7 +369,7 @@ def check_followers():
             )
             db.session.add(event)
 
-        # Create new snapshot
+        # Simpan snapshot baru
         snapshot = FollowerSnapshot(
             user_id=user.id,
             followers_count=len(followers_list),
@@ -261,9 +379,7 @@ def check_followers():
         )
         db.session.add(snapshot)
 
-        # Update user last check
         user.last_check = datetime.utcnow()
-
         db.session.commit()
 
         return jsonify({
@@ -279,14 +395,9 @@ def check_followers():
 
 @app.route('/logout')
 def logout():
-    username = session.get('instagram_username')
-    if username:
-        # Remove session file
-        session_file = f"session_{username}.json"
-        if os.path.exists(session_file):
-            os.remove(session_file)
-
-    session.clear()
+    """Keluar dari sesi web tanpa menghapus session file agar device ID tidak direset"""
+    session.pop('instagram_username', None)
+    session.pop('pending_2fa', None)
     return redirect(url_for('index'))
 
 @app.route('/stats')
@@ -297,7 +408,9 @@ def stats():
     username = session['instagram_username']
     user = User.query.filter_by(instagram_username=username).first()
 
-    # Get all snapshots for chart
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
     snapshots = FollowerSnapshot.query.filter_by(user_id=user.id).order_by(FollowerSnapshot.timestamp.asc()).all()
 
     chart_data = {

@@ -47,3 +47,25 @@ Makefile
 uv.lock
 pyproject.toml
 *.code-workspace
+*.log
+*.bak
+
+# AI / IDE Workspace Artifacts
+.agents/
+.gemini/
+.kilo/
+skills/
+skills-lock.json
+
+# Dokumentasi Internal & Panduan Deployment
+DEPLOYMENT.md
+VERCEL_DEPLOYMENT.md
+*DEPLOYMENT*.md
+*DEPLOY*.md
+PANDUAN_*.md
+CARA_BYPASS_IP_BLOCK.md
+INSTALL.md
+INSTALLATION.md
+INSTALLATION_GUIDE.md
+
+

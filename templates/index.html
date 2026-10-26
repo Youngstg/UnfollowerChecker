@@ -8,62 +8,34 @@
     <style>
         .tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
+            gap: 8px;
+            margin-bottom: 0;
+            flex-wrap: wrap;
         }
         .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-size: 14px;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-            font-weight: 600;
-        }
-        .tab:hover {
-            color: #667eea;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .session-help {
-            background: #f0f7ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
+            flex: 1;
+            min-width: 130px;
+            padding: 12px 14px;
             font-size: 13px;
-            line-height: 1.6;
         }
-        .session-help h4 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        .session-help ol {
-            margin-left: 20px;
-        }
-        .session-help code {
-            background: #e0e0e0;
-            padding: 2px 6px;
+        .badge-info {
+            display: inline-block;
+            background: #E3F2FD;
+            color: #1565C0;
+            padding: 4px 10px;
             border-radius: 4px;
             font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            border: 2px solid #2D3436;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="login-box">
-            <h1>Instagram Unfollower Checker</h1>
-            <p class="subtitle">Lihat siapa yang unfollow kamu dengan mudah</p>
+        <div class="login-box" style="max-width: 540px;">
+            <h1>Instagram Checker</h1>
+            <p class="subtitle">Lacak siapa yang unfollow akun Instagram Anda</p>
 
             {% if error %}
             <div class="error-message">
@@ -71,84 +43,98 @@
             </div>
             {% endif %}
 
+            {% if success %}
+            <div class="result-message success" style="margin-bottom: 20px;">
+                {{ success }}
+            </div>
+            {% endif %}
+
             <div class="tabs">
-                <button class="tab active" onclick="switchTab('password')">🔑 LOGIN DENGAN PASSWORD</button>
-                <button class="tab" onclick="switchTab('session')">📥 IMPORT SESSION</button>
+                <button type="button" class="tab active" onclick="switchTab('password')">🔑 PASSWORD</button>
+                <button type="button" class="tab" onclick="switchTab('cookie')">🍪 SESSIONID</button>
+                <button type="button" class="tab" onclick="switchTab('session')">📥 SESSION JSON</button>
             </div>
 
-            <form method="POST" action="{{ url_for('login') }}" id="loginForm">
-                <!-- Tab 1: Login dengan Password -->
-                <div id="password-tab" class="tab-content active">
+            <!-- Tab 1: Login dengan Password (Utama) -->
+            <div id="password-tab" class="tab-content active">
+                <div class="badge-info">✨ Metode Utama - Mendukung Verifikasi 2FA</div>
+                <form method="POST" action="{{ url_for('login') }}">
                     <div class="form-group">
                         <label for="username">Username Instagram</label>
-                        <input type="text" id="username" name="username" placeholder="masukkan username (tanpa @)">
+                        <input type="text" id="username" name="username" placeholder="masukkan username (tanpa @)" required autocomplete="username">
                     </div>
 
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" name="password" placeholder="masukkan password">
+                        <input type="password" id="password" name="password" placeholder="masukkan password akun" required autocomplete="current-password">
                     </div>
 
                     <button type="submit" class="btn-login">Login & Cek Unfollowers</button>
+                </form>
 
-                    <div class="warning-box" style="margin-top: 15px;">
-                        <strong>⚠️ Jika login gagal (IP blocked):</strong>
-                        <p>Gunakan tab "Import Session" sebagai gantinya. Lebih aman dan tidak kena block.</p>
-                    </div>
+                <div class="warning-box" style="margin-top: 15px;">
+                    <strong>🛡️ Tips Anti-Block:</strong>
+                    <p>Jika akun Anda meminta verifikasi 2FA atau kode OTP, halaman input kode verifikasi akan muncul otomatis setelah Anda menekan tombol Login.</p>
                 </div>
+            </div>
 
-                <!-- Tab 2: Import Session -->
-                <div id="session-tab" class="tab-content">
+            <!-- Tab 2: Login via Cookie / SessionID -->
+            <div id="cookie-tab" class="tab-content">
+                <div class="badge-info">⚡ Solusi Tercepat Jika IP VPS Terblokir</div>
+                <form method="POST" action="{{ url_for('login_cookie') }}">
                     <div class="form-group">
-                        <label for="username2">Username Instagram</label>
-                        <input type="text" id="username2" placeholder="masukkan username (tanpa @)">
+                        <label for="sessionid">Cookie SessionID</label>
+                        <input type="text" id="sessionid" name="sessionid" placeholder="Paste sessionid di sini..." required style="font-family: monospace;">
+                    </div>
+
+                    <button type="submit" class="btn-login">Login dengan SessionID</button>
+                </form>
+
+                <div class="session-help">
+                    <h4>💡 Cara Ambil SessionID dari Browser:</h4>
+                    <ol>
+                        <li>Buka <code>instagram.com</code> di browser yang sudah login akun Anda</li>
+                        <li>Tekan <strong>F12</strong> (Developer Tools)</li>
+                        <li>Buka tab <strong>Application</strong> (Chrome/Edge) atau <strong>Storage</strong> (Firefox)</li>
+                        <li>Klik <strong>Cookies</strong> → <code>https://www.instagram.com</code></li>
+                        <li>Cari nama <strong>sessionid</strong> dan copy nilainya (Value)</li>
+                        <li>Paste di atas dan klik Login. <em>Tidak perlu password!</em></li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Tab 3: Import Session JSON -->
+            <div id="session-tab" class="tab-content">
+                <div class="badge-info">📁 Cadangan - Import File JSON</div>
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="form-group">
+                        <label for="username_json">Username Instagram</label>
+                        <input type="text" id="username_json" name="username" placeholder="masukkan username (tanpa @)" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="session_json">Session JSON (dari instagrapi)</label>
-                        <textarea id="session_json" name="session_json" rows="6" placeholder='Paste session JSON di sini...' style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: monospace; font-size: 12px;"></textarea>
+                        <label for="session_json">Session JSON</label>
+                        <textarea id="session_json" name="session_json" rows="6" placeholder='Paste session JSON di sini...' required style="width: 100%; padding: 12px; border: 3px solid #2D3436; font-family: monospace; font-size: 12px; box-shadow: 4px 4px 0px #2D3436;"></textarea>
                     </div>
 
                     <button type="submit" class="btn-login">Import & Login</button>
+                </form>
 
-                    <div class="session-help">
-                        <h4>📖 Cara Mendapatkan Session JSON:</h4>
-                        <ol>
-                            <li>Install Python package: <code>pip install instagrapi</code></li>
-                            <li>Buat file <code>get_session.py</code> dengan kode:
-                                <pre style="background: #fff; padding: 10px; border-radius: 5px; overflow-x: auto; margin: 10px 0;">from instagrapi import Client
-
-cl = Client()
-cl.login("username_kamu", "password_kamu")
-cl.dump_settings("session.json")
-
-# Baca dan print
-import json
-with open("session.json") as f:
-    print(json.dumps(json.load(f), indent=2))</pre>
-                            </li>
-                            <li>Jalankan: <code>python get_session.py</code></li>
-                            <li>Copy output JSON dan paste di atas</li>
-                        </ol>
-
-                        <p style="margin-top: 10px;"><strong>Atau lebih mudah:</strong> Login dengan password dulu dari komputer/IP yang tidak di-block, lalu session akan otomatis tersimpan untuk penggunaan berikutnya.</p>
-                    </div>
+                <div class="session-help">
+                    <h4>📖 Cara Mendapatkan Session JSON:</h4>
+                    <p>Gunakan script pembantu <code>python get_session.py</code> dari komputer lokal jika server VPS mengalami pembatasan IP oleh Instagram.</p>
                 </div>
-            </form>
+            </div>
 
             <div class="warning-box">
                 <strong>Catatan Keamanan:</strong>
-                <p>Login credentials disimpan dengan aman dan hanya digunakan untuk mengakses data Instagram Anda. Kami tidak menyimpan password Anda.</p>
+                <p>Kredensial Anda hanya disimpan secara lokal di sesi server VPS Anda sendiri untuk mengakses data pengikut Instagram secara aman.</p>
             </div>
         </div>
     </div>
 
     <script>
-        let currentTab = 'password';
-
         function switchTab(tab) {
-            currentTab = tab;
-
             // Update tabs
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -156,58 +142,14 @@ with open("session.json") as f:
             if (tab === 'password') {
                 document.querySelectorAll('.tab')[0].classList.add('active');
                 document.getElementById('password-tab').classList.add('active');
-            } else {
+            } else if (tab === 'cookie') {
                 document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('cookie-tab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[2].classList.add('active');
                 document.getElementById('session-tab').classList.add('active');
             }
         }
-
-        // Form validation dan submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            if (currentTab === 'password') {
-                // Validasi tab password
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value.trim();
-
-                if (!username) {
-                    alert('Username tidak boleh kosong!');
-                    return false;
-                }
-
-                if (!password) {
-                    alert('Password tidak boleh kosong!');
-                    return false;
-                }
-
-                // Set nama field untuk submit
-                document.getElementById('username').name = 'username';
-                document.getElementById('username2').name = '';
-
-            } else {
-                // Validasi tab session
-                const username2 = document.getElementById('username2').value.trim();
-                const sessionJson = document.getElementById('session_json').value.trim();
-
-                if (!username2) {
-                    alert('Username tidak boleh kosong!');
-                    return false;
-                }
-
-                if (!sessionJson) {
-                    alert('Session JSON tidak boleh kosong!');
-                    return false;
-                }
-
-                // Set nama field untuk submit
-                document.getElementById('username2').name = 'username';
-                document.getElementById('username').name = '';
-            }
-
-            // Submit form
-            this.submit();
-        });
     </script>
 </body>
 </html>

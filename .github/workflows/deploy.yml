@@ -1,0 +1,72 @@
+name: Deploy UnfollowerChecker to Tencent Cloud VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH to Tencent Cloud VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts
+
+          APP_DIR="/var/www/unfollower"
+
+          # 1. Pastikan folder tujuan ada di VPS
+          ssh $SERVER_USER@$SERVER_IP "sudo mkdir -p $APP_DIR && sudo chown -R $SERVER_USER:$SERVER_USER $APP_DIR"
+
+          # 2. Sinkronkan source code (kecuali environment, database, sesi, dan venv agar data aman)
+          rsync -avz -e ssh --delete \
+            --exclude '.git' \
+            --exclude '.venv' \
+            --exclude 'venv' \
+            --exclude '.env' \
+            --exclude '*.db' \
+            --exclude 'session_*.json' \
+            --exclude '__pycache__' \
+            --exclude '.github' \
+            ./ $SERVER_USER@$SERVER_IP:$APP_DIR/
+
+          # 3. Setup virtualenv, dependencies, dan restart PM2 di VPS
+          ssh $SERVER_USER@$SERVER_IP << 'EOF'
+            set -e
+            cd /var/www/unfollower
+
+            # Setup Python virtualenv jika belum ada
+            if [ ! -d ".venv" ]; then
+              python3 -m venv .venv
+            fi
+
+            source .venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+
+            # Siapkan .env jika belum pernah dibuat
+            if [ ! -f .env ]; then
+              cp .env.example .env
+              sed -i 's/FLASK_PORT=5000/FLASK_PORT=5001/g' .env
+            fi
+
+            # Start atau Restart aplikasi via PM2 pada Port 5001
+            if pm2 describe unfollower > /dev/null 2>&1; then
+              pm2 restart unfollower
+            else
+              pm2 start ".venv/bin/gunicorn -w 2 -b 127.0.0.1:5001 app:app" --name "unfollower"
+            fi
+            pm2 save
+          EOF
