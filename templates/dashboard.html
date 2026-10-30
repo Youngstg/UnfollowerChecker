@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Unfollower Checker</title>
+    <title>Dashboard - Unfolia</title>
+    <link rel="icon" type="image/webp" href="{{ url_for('static', filename='images/logo.webp') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard">
         <nav class="navbar">
-            <h1>Instagram Unfollower Tracker</h1>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='images/logo.webp') }}" alt="Unfolia" style="width: 36px; height: 36px; object-fit: contain;">
+                <h1 style="margin: 0; font-size: 22px;">UNFOLIA</h1>
+            </div>
             <div class="nav-right">
                 <span class="username">@{{ username }}</span>
                 <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>

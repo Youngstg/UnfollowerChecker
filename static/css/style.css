@@ -95,31 +95,29 @@ body.landing-page {
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 10px;
+    margin-bottom: clamp(10px, 1.5vh, 18px);
 }
 
 .brand-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
-.brand-icon {
-    font-size: 32px;
-    background: #FFF9C4;
-    border: 3px solid #2D3436;
-    border-radius: 8px;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 4px 4px 0px #2D3436;
+.brand-logo-img {
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.brand-logo-img:hover {
+    transform: rotate(-5deg) scale(1.08);
 }
 
 .brand-name {
-    font-size: clamp(30px, 3.8vw, 46px);
+    font-size: clamp(26px, 3.2vw, 40px);
     font-weight: 900;
     color: #2D3436;
     letter-spacing: 2px;
@@ -133,21 +131,21 @@ body.landing-page {
     border: 3px solid #2D3436;
     box-shadow: 3px 3px 0px #2D3436;
     font-weight: 900;
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
-    padding: 6px 12px;
+    padding: 5px 10px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
 }
 
 .hero-title {
-    font-size: clamp(24px, 2.6vw, 38px);
+    font-size: clamp(20px, 2.2vw, 32px);
     font-weight: 900;
     line-height: 1.25;
     color: #2D3436;
     text-transform: uppercase;
-    margin-bottom: 14px;
+    margin-bottom: clamp(8px, 1vh, 12px);
 }
 
 .hero-title .highlight-text {
@@ -161,34 +159,34 @@ body.landing-page {
 }
 
 .hero-subtitle {
-    font-size: clamp(14px, 1.2vw, 16px);
-    line-height: 1.6;
+    font-size: clamp(13px, 1.05vw, 15px);
+    line-height: 1.5;
     color: #2D3436;
     font-weight: 600;
-    margin-bottom: 24px;
+    margin-bottom: clamp(12px, 1.8vh, 18px);
 }
 
 /* Feature Cards Neo-Brutalist */
 .feature-grid {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    margin-bottom: 20px;
+    gap: clamp(8px, 1.2vh, 12px);
+    margin-bottom: clamp(12px, 1.8vh, 18px);
 }
 
 .feature-card {
     display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 14px 16px;
+    align-items: center;
+    gap: 12px;
+    padding: clamp(8px, 1.1vh, 12px) 14px;
     border: 3px solid #2D3436;
-    box-shadow: 4px 4px 0px #2D3436;
+    box-shadow: 3px 3px 0px #2D3436;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .feature-card:hover {
     transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px #2D3436;
+    box-shadow: 5px 5px 0px #2D3436;
 }
 
 .feature-blue {
@@ -204,14 +202,14 @@ body.landing-page {
 }
 
 .feature-icon {
-    font-size: 24px;
+    font-size: 20px;
     line-height: 1;
     flex-shrink: 0;
     background: white;
     border: 2px solid #2D3436;
     border-radius: 6px;
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -219,18 +217,18 @@ body.landing-page {
 }
 
 .feature-body h3 {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 900;
     text-transform: uppercase;
     color: #2D3436;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .feature-body p {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #2D3436;
-    line-height: 1.45;
+    line-height: 1.4;
     margin: 0;
 }
 
@@ -238,8 +236,8 @@ body.landing-page {
 .trust-footer {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    padding-top: 14px;
+    gap: 8px;
+    padding-top: clamp(8px, 1.2vh, 14px);
     border-top: 3px dashed #2D3436;
 }
 
@@ -256,61 +254,50 @@ body.landing-page {
     gap: 6px;
 }
 
-/* Kolom Kanan: Login Box Panel */
+/* Kolom Kanan: Form Panel */
 .unfolia-right {
-    background: #FFF0F0;
+    background: #FFFDF0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(20px, 3vw, 40px);
+    padding: clamp(16px, 2.5vw, 36px);
 }
 
-/* Login Box */
+/* Form Wrapper (Sebelah Kanan Bersatu dengan Layout) */
+.form-wrapper {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+/* Standalone Login Box (Khusus Halaman 2FA) */
 .login-box {
     width: 100%;
-    max-width: 500px;
+    max-width: 460px;
     margin: 0 auto;
     background: #FFF9C4;
-    padding: clamp(24px, 3vw, 36px);
+    padding: clamp(14px, 1.8vw, 20px);
     border: 4px solid #2D3436;
-    box-shadow: 8px 8px 0px #2D3436;
-}
-
-.login-title,
-.login-box h1 {
-    text-align: center;
-    color: #2D3436;
-    margin-bottom: 6px;
-    font-size: clamp(24px, 2.4vw, 32px);
-    font-weight: 900;
-    text-transform: uppercase;
-}
-
-.subtitle {
-    text-align: center;
-    color: #555;
-    margin-bottom: 20px;
-    font-size: 14px;
-    font-weight: 700;
+    box-shadow: 6px 6px 0px #2D3436;
 }
 
 /* Tabs */
 .tabs {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 0;
     flex-wrap: wrap;
 }
 
 .tab {
     flex: 1;
-    min-width: 110px;
-    min-height: 44px;
-    padding: 10px 14px;
+    min-width: 95px;
+    min-height: 38px;
+    padding: 7px 10px;
     cursor: pointer;
     border: 3px solid #2D3436;
     background: #E0E0E0;
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
     transition: all 0.2s;
     font-weight: 900;
@@ -319,28 +306,28 @@ body.landing-page {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .tab.active {
     background: #FFE0B2;
     color: #2D3436;
     transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0px #2D3436;
+    box-shadow: 4px 4px 0px #2D3436;
 }
 
 .tab:hover:not(.active) {
     background: #F0F0F0;
     transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0px #2D3436;
+    box-shadow: 3px 3px 0px #2D3436;
 }
 
 .tab-content {
     display: none;
-    padding: 20px;
+    padding: 12px 14px;
     border: 3px solid #2D3436;
-    box-shadow: 4px 4px 0px #2D3436;
-    margin-top: 12px;
+    box-shadow: 3px 3px 0px #2D3436;
+    margin-top: 8px;
 }
 
 .tab-content.active {
@@ -362,40 +349,40 @@ body.landing-page {
 .badge-info {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     background: #E3F2FD;
     color: #1565C0;
-    padding: 5px 10px;
-    font-size: 12px;
+    padding: 3px 8px;
+    font-size: 11px;
     font-weight: 800;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
     border: 2px solid #2D3436;
     box-shadow: 2px 2px 0px #2D3436;
 }
 
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 3px;
     color: #2D3436;
     font-weight: 900;
-    font-size: 13px;
+    font-size: 11px;
     text-transform: uppercase;
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
-    min-height: 46px;
-    padding: 12px 14px;
+    min-height: 38px;
+    padding: 8px 10px;
     border: 3px solid #2D3436;
     background: white;
-    font-size: 14px;
+    font-size: 13px;
     font-family: inherit;
-    box-shadow: 4px 4px 0px #2D3436;
+    box-shadow: 3px 3px 0px #2D3436;
     transition: all 0.2s;
 }
 
@@ -403,22 +390,22 @@ body.landing-page {
 .form-group textarea:focus {
     outline: none;
     background: #E3F2FD;
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px #2D3436;
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px #2D3436;
 }
 
 .btn-login {
     width: 100%;
-    min-height: 48px;
-    padding: 14px;
+    min-height: 42px;
+    padding: 10px;
     background: #FFB3BA;
     color: #2D3436;
     border: 3px solid #2D3436;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 900;
     cursor: pointer;
     text-transform: uppercase;
-    box-shadow: 5px 5px 0px #2D3436;
+    box-shadow: 4px 4px 0px #2D3436;
     transition: all 0.2s;
     display: flex;
     align-items: center;
@@ -428,7 +415,7 @@ body.landing-page {
 .btn-login:hover {
     background: #FF8A95;
     transform: translate(-2px, -2px);
-    box-shadow: 7px 7px 0px #2D3436;
+    box-shadow: 6px 6px 0px #2D3436;
 }
 
 .btn-login:active {
@@ -439,52 +426,81 @@ body.landing-page {
 .error-message {
     background: #FFCDD2;
     color: #C62828;
-    padding: 14px;
+    padding: 8px 10px;
     border: 3px solid #C62828;
-    margin-bottom: 16px;
-    box-shadow: 4px 4px 0px #2D3436;
+    margin-bottom: 8px;
+    box-shadow: 3px 3px 0px #2D3436;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 11px;
+}
+
+.form-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    background: #FFF9C4;
+    border: 2px solid #2D3436;
+    box-shadow: 2px 2px 0px #2D3436;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2D3436;
+    line-height: 1.35;
 }
 
 .warning-box {
-    margin-top: 15px;
+    margin-top: 8px;
     background: #FFF9C4;
-    padding: 14px;
+    padding: 8px 10px;
     border: 3px solid #F57C00;
-    font-size: 12px;
+    font-size: 11px;
     color: #2D3436;
-    box-shadow: 4px 4px 0px #2D3436;
+    box-shadow: 3px 3px 0px #2D3436;
+    line-height: 1.35;
 }
 
 .warning-box strong {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
+    gap: 5px;
+    margin-bottom: 2px;
     font-weight: 900;
+    font-size: 11px;
     text-transform: uppercase;
     color: #F57C00;
 }
 
+.warning-box p {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
 .session-help {
     background: #C5E1A5;
-    padding: 16px;
+    padding: 8px 10px;
     border: 3px solid #2D3436;
-    margin-top: 14px;
-    font-size: 13px;
-    line-height: 1.6;
-    box-shadow: 4px 4px 0px #2D3436;
+    margin-top: 8px;
+    font-size: 11px;
+    line-height: 1.4;
+    box-shadow: 3px 3px 0px #2D3436;
 }
 
 .session-help h4 {
     color: #2D3436;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
     font-weight: 900;
+    font-size: 11px;
     text-transform: uppercase;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+}
+
+.session-help ol {
+    margin-left: 14px;
+    font-weight: 600;
 }
 
 .info-box {
@@ -539,9 +555,9 @@ body.landing-page {
 }
 
 /* ==========================================================================
-   DESKTOP VIEW: EXACT 1 FULL SCREEN (100VH) SPLIT
+   DESKTOP & LAPTOP VIEW: EXACT 1 FULL SCREEN (100VH) SPLIT (LEFT & RIGHT)
    ========================================================================== */
-@media (min-width: 992px) {
+@media (min-width: 768px) {
     html, body.landing-page {
         height: 100vh;
         height: 100dvh;
@@ -561,63 +577,68 @@ body.landing-page {
         flex: 1.15;
         height: 100%;
         overflow-y: auto;
-        padding: clamp(24px, 3.2vw, 44px);
-        border-right: 4px solid #2D3436;
+        scrollbar-width: none; /* Hilangkan scrollbar Firefox */
+        -ms-overflow-style: none; /* Hilangkan scrollbar IE/Edge */
+        padding: clamp(14px, 2vw, 24px);
+        border-right: 3px solid #2D3436;
         border-bottom: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* Hilangkan semua scrollbar Chrome/Safari/Edge di landing page */
+    body.landing-page .unfolia-left::-webkit-scrollbar,
+    body.landing-page .unfolia-right::-webkit-scrollbar,
+    body.landing-page::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
     }
 
     body.landing-page .unfolia-right {
         flex: 0.85;
         height: 100%;
-        overflow-y: auto;
-        padding: clamp(20px, 2.5vw, 36px);
-    }
-
-    /* Custom Scrollbar */
-    .unfolia-left::-webkit-scrollbar,
-    .unfolia-right::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .unfolia-left::-webkit-scrollbar-track,
-    .unfolia-right::-webkit-scrollbar-track {
-        background: #FFE5E5;
-    }
-
-    .unfolia-left::-webkit-scrollbar-thumb,
-    .unfolia-right::-webkit-scrollbar-thumb {
-        background: #2D3436;
-        border-radius: 4px;
+        overflow-y: hidden;
+        overflow-x: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(12px, 2vw, 28px);
+        background: #FFFDF0;
     }
 }
 
 /* ==========================================================================
-   MOBILE & TABLET VIEW: CLEAN VERTICAL STACK
+   MOBILE VIEW (< 768px): SEAMLESS VERTICAL FLOW
    ========================================================================== */
-@media (max-width: 991px) {
+@media (max-width: 767px) {
     body.landing-page {
-        padding: 12px;
+        padding: 0;
         min-height: 100vh;
         overflow-y: auto;
     }
 
     .unfolia-layout {
-        gap: 20px;
+        flex-direction: column;
+        width: 100%;
     }
 
     .unfolia-left {
-        border: 4px solid #2D3436;
-        box-shadow: 6px 6px 0px #2D3436;
+        border-right: none;
+        border-bottom: 4px solid #2D3436;
         padding: 24px 18px;
     }
 
     .unfolia-right {
-        padding: 0;
-        background: transparent;
+        padding: 24px 18px;
+        background: #FFFDF0;
     }
 
-    .login-box {
-        box-shadow: 6px 6px 0px #2D3436;
+    .form-wrapper {
+        max-width: 100%;
     }
 }
 
