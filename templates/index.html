@@ -3,132 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Unfollower Checker</title>
+    <title>Unfolia - Instagram Unfollower Checker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 0;
-            flex-wrap: wrap;
-        }
-        .tab {
-            flex: 1;
-            min-width: 130px;
-            padding: 12px 14px;
-            font-size: 13px;
-        }
-        .badge-info {
-            display: inline-block;
-            background: #E3F2FD;
-            color: #1565C0;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            border: 2px solid #2D3436;
-        }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="login-box" style="max-width: 540px;">
-            <h1>Instagram Checker</h1>
-            <p class="subtitle">Lacak siapa yang unfollow akun Instagram Anda</p>
-
-            {% if error %}
-            <div class="error-message">
-                {{ error }}
-            </div>
-            {% endif %}
-
-            {% if success %}
-            <div class="result-message success" style="margin-bottom: 20px;">
-                {{ success }}
-            </div>
-            {% endif %}
-
-            <div class="tabs">
-                <button type="button" class="tab active" onclick="switchTab('password')">🔑 PASSWORD</button>
-                <button type="button" class="tab" onclick="switchTab('cookie')">🍪 SESSIONID</button>
-                <button type="button" class="tab" onclick="switchTab('session')">📥 SESSION JSON</button>
-            </div>
-
-            <!-- Tab 1: Login dengan Password (Utama) -->
-            <div id="password-tab" class="tab-content active">
-                <div class="badge-info">✨ Metode Utama - Mendukung Verifikasi 2FA</div>
-                <form method="POST" action="{{ url_for('login') }}">
-                    <div class="form-group">
-                        <label for="username">Username Instagram</label>
-                        <input type="text" id="username" name="username" placeholder="masukkan username (tanpa @)" required autocomplete="username">
+<body class="landing-page">
+    <div class="unfolia-layout">
+        <!-- Kolom Kiri: Penjelasan & Branding Unfolia -->
+        <div class="unfolia-left">
+            <div class="unfolia-left-top">
+                <div class="brand-header">
+                    <div class="brand-logo">
+                        <span class="brand-icon">
+                            <svg class="icon-brand" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        </span>
+                        <span class="brand-name">UNFOLIA</span>
                     </div>
+                    <span class="brand-badge">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        INSTAGRAM TRACKER
+                    </span>
+                </div>
 
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" placeholder="masukkan password akun" required autocomplete="current-password">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        Lacak Siapa Yang <span class="highlight-text">Unfollow</span> Akun Kamu
+                    </h1>
+                    <p class="hero-subtitle">
+                        Ketahui siapa saja yang diam-diam berhenti mengikutimu atau tidak follow balik dengan cepat, aman, dan akurat. Semua data diproses langsung di server pribadi tanpa pihak ketiga.
+                    </p>
+
+                    <div class="feature-grid">
+                        <div class="feature-card feature-blue">
+                            <div class="feature-icon">
+                                <svg class="icon icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                            </div>
+                            <div class="feature-body">
+                                <h3>Deteksi Unfollowers Otomatis</h3>
+                                <p>Bandingkan daftar followers secara berkala untuk mengetahui akun-akun yang baru saja unfollow kamu.</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-card feature-yellow">
+                            <div class="feature-icon">
+                                <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                            </div>
+                            <div class="feature-body">
+                                <h3>Cek Akun Tidak Follow Balik</h3>
+                                <p>Temukan teman atau orang yang kamu follow namun mereka tidak mengikuti kamu kembali (not following back).</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-card feature-green">
+                            <div class="feature-icon">
+                                <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                            </div>
+                            <div class="feature-body">
+                                <h3>Anti-Block Server & 2FA</h3>
+                                <p>Mendukung proteksi proxy VPS, verifikasi OTP 2FA langsung di web, serta opsi login instan via cookie SessionID.</p>
+                            </div>
+                        </div>
                     </div>
-
-                    <button type="submit" class="btn-login">Login & Cek Unfollowers</button>
-                </form>
-
-                <div class="warning-box" style="margin-top: 15px;">
-                    <strong>🛡️ Tips Anti-Block:</strong>
-                    <p>Jika akun Anda meminta verifikasi 2FA atau kode OTP, halaman input kode verifikasi akan muncul otomatis setelah Anda menekan tombol Login.</p>
                 </div>
             </div>
 
-            <!-- Tab 2: Login via Cookie / SessionID -->
-            <div id="cookie-tab" class="tab-content">
-                <div class="badge-info">⚡ Solusi Tercepat Jika IP VPS Terblokir</div>
-                <form method="POST" action="{{ url_for('login_cookie') }}">
-                    <div class="form-group">
-                        <label for="sessionid">Cookie SessionID</label>
-                        <input type="text" id="sessionid" name="sessionid" placeholder="Paste sessionid di sini..." required style="font-family: monospace;">
-                    </div>
-
-                    <button type="submit" class="btn-login">Login dengan SessionID</button>
-                </form>
-
-                <div class="session-help">
-                    <h4>💡 Cara Ambil SessionID dari Browser:</h4>
-                    <ol>
-                        <li>Buka <code>instagram.com</code> di browser yang sudah login akun Anda</li>
-                        <li>Tekan <strong>F12</strong> (Developer Tools)</li>
-                        <li>Buka tab <strong>Application</strong> (Chrome/Edge) atau <strong>Storage</strong> (Firefox)</li>
-                        <li>Klik <strong>Cookies</strong> → <code>https://www.instagram.com</code></li>
-                        <li>Cari nama <strong>sessionid</strong> dan copy nilainya (Value)</li>
-                        <li>Paste di atas dan klik Login. <em>Tidak perlu password!</em></li>
-                    </ol>
+            <div class="trust-footer">
+                <div class="trust-pill">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    100% Data Pribadi
+                </div>
+                <div class="trust-pill">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                    VPS Powered
+                </div>
+                <div class="trust-pill">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path><path d="M8.5 8.5v.01"></path><path d="M7 14v.01"></path><path d="M12 17v.01"></path><path d="M16 13v.01"></path></svg>
+                    Bebas Password via SessionID
                 </div>
             </div>
+        </div>
 
-            <!-- Tab 3: Import Session JSON -->
-            <div id="session-tab" class="tab-content">
-                <div class="badge-info">📁 Cadangan - Import File JSON</div>
-                <form method="POST" action="{{ url_for('login') }}">
-                    <div class="form-group">
-                        <label for="username_json">Username Instagram</label>
-                        <input type="text" id="username_json" name="username" placeholder="masukkan username (tanpa @)" required>
-                    </div>
+        <!-- Kolom Kanan: Form Login Unfolia -->
+        <div class="unfolia-right">
+            <div class="login-box">
+                <h2 class="login-title">Masuk ke Unfolia</h2>
+                <p class="subtitle">Pilih metode login untuk mulai melacak pengikut</p>
 
-                    <div class="form-group">
-                        <label for="session_json">Session JSON</label>
-                        <textarea id="session_json" name="session_json" rows="6" placeholder='Paste session JSON di sini...' required style="width: 100%; padding: 12px; border: 3px solid #2D3436; font-family: monospace; font-size: 12px; box-shadow: 4px 4px 0px #2D3436;"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-login">Import & Login</button>
-                </form>
-
-                <div class="session-help">
-                    <h4>📖 Cara Mendapatkan Session JSON:</h4>
-                    <p>Gunakan script pembantu <code>python get_session.py</code> dari komputer lokal jika server VPS mengalami pembatasan IP oleh Instagram.</p>
+                {% if error %}
+                <div class="error-message">
+                    {{ error }}
                 </div>
-            </div>
+                {% endif %}
 
-            <div class="warning-box">
-                <strong>Catatan Keamanan:</strong>
-                <p>Kredensial Anda hanya disimpan secara lokal di sesi server VPS Anda sendiri untuk mengakses data pengikut Instagram secara aman.</p>
+                {% if success %}
+                <div class="result-message success" style="margin-bottom: 20px;">
+                    {{ success }}
+                </div>
+                {% endif %}
+
+                <div class="tabs">
+                    <button type="button" class="tab active" onclick="switchTab('password')">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"></circle><path d="m21 3-9.5 9.5"></path><path d="m15.5 7.5 3 3"></path></svg>
+                        PASSWORD
+                    </button>
+                    <button type="button" class="tab" onclick="switchTab('cookie')">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path><circle cx="8.5" cy="8.5" r="1"></circle><circle cx="7" cy="14" r="1"></circle><circle cx="12" cy="17" r="1"></circle><circle cx="16" cy="13" r="1"></circle></svg>
+                        SESSIONID
+                    </button>
+                    <button type="button" class="tab" onclick="switchTab('session')">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        SESSION JSON
+                    </button>
+                </div>
+
+                <!-- Tab 1: Login dengan Password (Utama) -->
+                <div id="password-tab" class="tab-content active">
+                    <div class="badge-info">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Metode Utama - Mendukung Verifikasi 2FA
+                    </div>
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <div class="form-group">
+                            <label for="username">Username Instagram</label>
+                            <input type="text" id="username" name="username" placeholder="masukkan username (tanpa @)" required autocomplete="username">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" placeholder="masukkan password akun" required autocomplete="current-password">
+                        </div>
+
+                        <button type="submit" class="btn-login">Login & Cek Unfollowers</button>
+                    </form>
+
+                    <div class="warning-box" style="margin-top: 15px;">
+                        <strong>
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            Tips Anti-Block:
+                        </strong>
+                        <p>Jika akun Anda meminta verifikasi 2FA atau kode OTP, halaman input kode verifikasi akan muncul otomatis setelah Anda menekan tombol Login.</p>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Login via Cookie / SessionID -->
+                <div id="cookie-tab" class="tab-content">
+                    <div class="badge-info">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        Solusi Tercepat Jika IP VPS Terblokir
+                    </div>
+                    <form method="POST" action="{{ url_for('login_cookie') }}">
+                        <div class="form-group">
+                            <label for="sessionid">Cookie SessionID</label>
+                            <input type="text" id="sessionid" name="sessionid" placeholder="Paste sessionid di sini..." required style="font-family: monospace;">
+                        </div>
+
+                        <button type="submit" class="btn-login">Login dengan SessionID</button>
+                    </form>
+
+                    <div class="session-help">
+                        <h4>
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            Cara Ambil SessionID dari Browser:
+                        </h4>
+                        <ol>
+                            <li>Buka <code>instagram.com</code> di browser yang sudah login akun Anda</li>
+                            <li>Tekan <strong>F12</strong> (Developer Tools)</li>
+                            <li>Buka tab <strong>Application</strong> (Chrome/Edge) atau <strong>Storage</strong> (Firefox)</li>
+                            <li>Klik <strong>Cookies</strong> → <code>https://www.instagram.com</code></li>
+                            <li>Cari nama <strong>sessionid</strong> dan copy nilainya (Value)</li>
+                            <li>Paste di atas dan klik Login. <em>Tidak perlu password!</em></li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Import Session JSON -->
+                <div id="session-tab" class="tab-content">
+                    <div class="badge-info">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                        Cadangan - Import File JSON
+                    </div>
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <div class="form-group">
+                            <label for="username_json">Username Instagram</label>
+                            <input type="text" id="username_json" name="username" placeholder="masukkan username (tanpa @)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="session_json">Session JSON</label>
+                            <textarea id="session_json" name="session_json" rows="6" placeholder='Paste session JSON di sini...' required style="width: 100%; padding: 12px; border: 3px solid #2D3436; font-family: monospace; font-size: 12px; box-shadow: 4px 4px 0px #2D3436;"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-login">Import & Login</button>
+                    </form>
+
+                    <div class="session-help">
+                        <h4>
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                            Cara Mendapatkan Session JSON:
+                        </h4>
+                        <p>Gunakan script pembantu <code>python get_session.py</code> dari komputer lokal jika server VPS mengalami pembatasan IP oleh Instagram.</p>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <strong>
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        Catatan Keamanan:
+                    </strong>
+                    <p>Kredensial Anda hanya disimpan secara lokal di sesi server VPS Anda sendiri untuk mengakses data pengikut Instagram secara aman.</p>
+                </div>
             </div>
         </div>
     </div>
