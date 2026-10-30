@@ -96,7 +96,7 @@ body.landing-page {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: clamp(10px, 1.5vh, 18px);
+    margin-bottom: clamp(8px, 1.2vh, 14px);
 }
 
 .brand-logo {
@@ -145,7 +145,7 @@ body.landing-page {
     line-height: 1.25;
     color: #2D3436;
     text-transform: uppercase;
-    margin-bottom: clamp(8px, 1vh, 12px);
+    margin-bottom: clamp(6px, 0.8vh, 10px);
 }
 
 .hero-title .highlight-text {
@@ -160,19 +160,18 @@ body.landing-page {
 
 .hero-subtitle {
     font-size: clamp(13px, 1.1vw, 15px);
-    line-height: 1.55;
+    line-height: 1.5;
     color: #2D3436;
     font-weight: 700;
-    margin-bottom: clamp(12px, 1.8vh, 18px);
+    margin-bottom: clamp(10px, 1.4vh, 16px);
 }
 
-/* Feature Cards Neo-Brutalist Comic: Dipusatkan ke Tengah & Sedikit Beradu/Overlap */
+/* Feature Cards Neo-Brutalist Comic: 2 Kiri, 1 Kanan Selang-Seling dengan Sedikit Beradu di Tengah */
 .feature-grid {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: clamp(16px, 2.5vh, 26px);
+    gap: clamp(8px, 1.2vh, 14px);
+    margin-bottom: clamp(10px, 1.4vh, 16px);
     width: 100%;
 }
 
@@ -180,38 +179,38 @@ body.landing-page {
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    padding: clamp(14px, 1.8vh, 18px) 18px;
+    padding: clamp(9px, 1.3vh, 13px) 16px;
     border: 4px solid #2D3436;
     box-shadow: 6px 6px 0px #2D3436;
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, z-index 0.2s ease;
-    width: clamp(280px, 82%, 410px);
-    position: relative;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+    width: clamp(260px, 76%, 370px);
 }
 
-/* Kotak 1: Berpusat di tengah, geser sedikit ke kiri, miring (-2.2deg) */
+/* Kotak 1: Di Kiri, Didekatkan ~1cm ke Tengah (-1.6deg) */
 .feature-card:nth-child(1) {
-    transform: translateX(-16px) rotate(-2.2deg);
-    z-index: 1;
+    align-self: flex-start;
+    margin-left: clamp(40px, 4.5vw, 55px);
+    transform: rotate(-1.6deg);
 }
 
-/* Kotak 2: Berpusat di tengah, geser sedikit ke kanan, miring (+2.5deg), agak beradu dengan kotak atas */
+/* Kotak 2: Di Kanan, Didekatkan ~1cm ke Tengah (+1.8deg) */
 .feature-card:nth-child(2) {
-    transform: translateX(16px) rotate(2.5deg);
-    margin-top: -6px;
-    z-index: 2;
+    align-self: flex-end;
+    margin-right: clamp(40px, 4.5vw, 55px);
+    transform: rotate(1.8deg);
 }
 
-/* Kotak 3: Berpusat di tengah, geser sedikit ke kiri, miring (-1.8deg), agak beradu dengan kotak atas */
+/* Kotak 3: Di Kiri, Didekatkan ~1cm ke Tengah (-1.2deg) */
 .feature-card:nth-child(3) {
-    transform: translateX(-12px) rotate(-1.8deg);
-    margin-top: -6px;
-    z-index: 3;
+    align-self: flex-start;
+    margin-left: clamp(40px, 4.5vw, 55px);
+    transform: rotate(-1.2deg);
 }
 
 .feature-card:hover {
-    transform: translate(-4px, -4px) rotate(0deg) scale(1.03);
-    box-shadow: 9px 9px 0px #2D3436;
-    z-index: 10;
+    transform: translate(-3px, -3px) rotate(0deg) scale(1.02);
+    box-shadow: 8px 8px 0px #2D3436;
+    z-index: 5;
 }
 
 .feature-blue {
@@ -295,18 +294,20 @@ body.landing-page {
     padding: clamp(16px, 2.5vw, 36px);
 }
 
-/* Form Wrapper (Sebelah Kanan Bersatu dengan Layout, Posisi Tombol Tab Fixed) */
+/* Form Wrapper (Sebelah Kanan Bersatu dengan Layout, Posisi Tombol Tab 100% Fixed) */
 .form-wrapper {
     width: 100%;
-    max-width: 480px;
+    max-width: 470px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
+    height: auto;
 }
 
 @media (min-width: 768px) {
     .form-wrapper {
-        min-height: 440px;
+        height: auto;
+        flex-shrink: 0;
     }
 }
 
@@ -326,53 +327,54 @@ body.landing-page {
     display: flex;
     gap: 8px;
     margin-bottom: 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* Jangan membungkus ke baris 2 */
     flex-shrink: 0;
+    width: 100%;
 }
 
 .tab {
-    flex: 1;
-    min-width: 100px;
+    flex: 1 1 0; /* Lebar merata untuk ketiga tombol tab */
+    min-width: 0;
+    white-space: nowrap;
+    height: 42px;
     min-height: 42px;
-    padding: 9px 12px;
+    padding: 0 8px;
     cursor: pointer;
     border: 4px solid #2D3436;
     background: #E0E0E0;
-    font-size: 12px;
+    font-size: 11.5px;
     color: #444;
-    transition: all 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
     font-weight: 900;
     box-shadow: 4px 4px 0px #2D3436;
     text-transform: uppercase;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    letter-spacing: 0.5px;
+    gap: 5px;
+    letter-spacing: 0.3px;
 }
 
 .tab.active {
     background: #FFE0B2;
     color: #2D3436;
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px #2D3436;
+    box-shadow: 4px 4px 0px #2D3436;
 }
 
 .tab:hover:not(.active) {
     background: #F0F0F0;
-    transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0px #2D3436;
 }
 
 .tab-content {
     display: none;
-    padding: 22px 24px;
+    padding: 16px 20px;
     border: 4px solid #2D3436;
     box-shadow: 7px 7px 0px #2D3436;
-    margin-top: 12px;
-    min-height: 380px;
+    margin-top: 10px;
+    height: auto; /* Otomatis pas dengan isi konten tanpa gap kosong */
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    box-sizing: border-box;
 }
 
 .tab-content.active {
@@ -397,24 +399,25 @@ body.landing-page {
     gap: 6px;
     background: #E3F2FD;
     color: #1565C0;
-    padding: 5px 12px;
-    font-size: 12px;
+    padding: 4px 10px;
+    font-size: 11px;
     font-weight: 900;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     border: 3px solid #2D3436;
     box-shadow: 3px 3px 0px #2D3436;
+    align-self: flex-start;
 }
 
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 7px;
+    margin-bottom: 5px;
     color: #2D3436;
     font-weight: 900;
-    font-size: 13px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -422,14 +425,14 @@ body.landing-page {
 .form-group input,
 .form-group textarea {
     width: 100%;
-    min-height: 46px;
-    padding: 10px 14px;
+    min-height: 42px;
+    padding: 8px 12px;
     border: 4px solid #2D3436;
     background: white;
-    font-size: 14px;
+    font-size: 13.5px;
     font-family: inherit;
     font-weight: 700;
-    box-shadow: 4px 4px 0px #2D3436;
+    box-shadow: 3px 3px 0px #2D3436;
     transition: all 0.15s ease;
 }
 
@@ -437,18 +440,18 @@ body.landing-page {
 .form-group textarea:focus {
     outline: none;
     background: #E3F2FD;
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px #2D3436;
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px #2D3436;
 }
 
 .btn-login {
     width: 100%;
-    min-height: 50px;
-    padding: 12px 16px;
+    min-height: 46px;
+    padding: 10px 14px;
     background: #FFB3BA;
     color: #2D3436;
     border: 4px solid #2D3436;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 900;
     cursor: pointer;
     text-transform: uppercase;
@@ -458,7 +461,7 @@ body.landing-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
 .btn-login:hover {
@@ -487,11 +490,11 @@ body.landing-page {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 12px; /* Jarak rapat dan pas, bukan auto */
     background: #FFF9C4;
     border: 3px solid #2D3436;
     box-shadow: 3px 3px 0px #2D3436;
-    padding: 8px 12px;
+    padding: 7px 10px;
     font-size: 11px;
     font-weight: 800;
     color: #2D3436;
@@ -499,9 +502,9 @@ body.landing-page {
 }
 
 .warning-box {
-    margin-top: 8px;
+    margin-top: 12px;
     background: #FFF9C4;
-    padding: 8px 10px;
+    padding: 7px 10px;
     border: 3px solid #F57C00;
     font-size: 11px;
     color: #2D3436;
@@ -528,12 +531,39 @@ body.landing-page {
 
 .session-help {
     background: #C5E1A5;
-    padding: 8px 10px;
+    padding: 7px 10px;
     border: 3px solid #2D3436;
-    margin-top: 8px;
+    margin-top: 12px; /* Jarak rapat dan pas, bukan auto */
     font-size: 11px;
-    line-height: 1.4;
+    line-height: 1.35;
     box-shadow: 3px 3px 0px #2D3436;
+}
+
+.btn-download-script {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #FFF9C4;
+    color: #2D3436;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border: 2px solid #2D3436;
+    box-shadow: 2px 2px 0px #2D3436;
+    transition: all 0.15s ease;
+}
+
+.btn-download-script:hover {
+    background: #FFE082;
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px #2D3436;
+}
+
+.btn-download-script:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px #2D3436;
 }
 
 .session-help h4 {
@@ -610,7 +640,9 @@ body.landing-page {
     html, body.landing-page {
         height: 100vh;
         height: 100dvh;
-        overflow: hidden;
+        max-height: 100vh;
+        max-height: 100dvh;
+        overflow: hidden !important;
         margin: 0;
         padding: 0;
     }
@@ -618,17 +650,22 @@ body.landing-page {
     body.landing-page .unfolia-layout {
         height: 100vh;
         height: 100dvh;
+        max-height: 100vh;
+        max-height: 100dvh;
         flex-direction: row;
-        overflow: hidden;
+        overflow: hidden !important;
     }
 
     body.landing-page .unfolia-left {
         flex: 1.15;
         height: 100%;
-        overflow-y: auto;
-        scrollbar-width: none; /* Hilangkan scrollbar Firefox */
-        -ms-overflow-style: none; /* Hilangkan scrollbar IE/Edge */
-        padding: clamp(16px, 2.5vw, 32px);
+        max-height: 100vh;
+        overflow: hidden !important;
+        overflow-y: hidden !important;
+        overflow-x: hidden !important;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: clamp(12px, 1.8vh, 22px) clamp(16px, 2.2vw, 30px);
         border-right: none;
         border-bottom: none;
         display: flex;
@@ -648,14 +685,19 @@ body.landing-page {
     body.landing-page .unfolia-right {
         flex: 0.85;
         height: 100%;
-        overflow-y: hidden;
-        overflow-x: hidden;
+        max-height: 100vh;
+        overflow: hidden !important;
+        overflow-y: hidden !important;
+        overflow-x: hidden !important;
         scrollbar-width: none;
         -ms-overflow-style: none;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
-        padding: clamp(12px, 2vw, 28px);
+        padding-top: clamp(32px, 6.5vh, 60px);
+        padding-bottom: 20px;
+        padding-left: clamp(10px, 1.5vw, 22px);
+        padding-right: clamp(10px, 1.5vw, 22px);
         background: #FFE5E5;
     }
 }
@@ -681,6 +723,13 @@ body.landing-page {
         padding: 24px 18px;
     }
 
+    .feature-card {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        transform: none !important;
+    }
+
     .unfolia-right {
         padding: 24px 18px;
         background: #FFE5E5;
@@ -688,6 +737,13 @@ body.landing-page {
 
     .form-wrapper {
         max-width: 100%;
+        height: auto !important;
+    }
+
+    .tab-content,
+    #session-tab {
+        height: auto !important;
+        min-height: 380px;
     }
 }
 

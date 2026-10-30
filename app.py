@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from instagrapi import Client
 from instagrapi.exceptions import (
@@ -99,6 +99,11 @@ def index():
     if 'instagram_username' in session:
         return redirect(url_for('dashboard'))
     return render_template('index.html')
+
+@app.route('/download/get_session.py')
+def download_get_session():
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'get_session.py')
+    return send_file(script_path, as_attachment=True, download_name='get_session.py')
 
 @app.route('/login', methods=['POST'])
 def login():
